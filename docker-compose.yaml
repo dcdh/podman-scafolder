@@ -1,0 +1,26 @@
+version: '3.9'
+services:
+  hello1:
+    image: localhost:5000/hashicorp/http-echo:0.2.3
+    container_name: hello1
+    command: ["-text=Hello from hello1"]
+    networks:
+      - labnet
+  hello2:
+    image: localhost:5000/hashicorp/http-echo:0.2.3
+    container_name: hello2
+    command: ["-text=Hello from hello2"]
+    networks:
+      - labnet
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:Z
+    networks:
+      - labnet
+networks:
+  labnet:
+    driver: bridge
