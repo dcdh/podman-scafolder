@@ -111,8 +111,17 @@ location = "localhost:5000"
 insecure = true
 EOF
 ----
+Configure pull of images from insecure localhost registry from VM for Podman rootful (without it podman kube will not work)
+[source,shell]
+----
+sudo tee /etc/containers/registries.conf >/dev/null <<'EOF'
+[[registry]]
+location = "localhost:5000"
+insecure = true
+EOF
+----
 
-Start docker compose from VM
+Start docker compose from VM: DEPRECATED see Quadlet paragraph
 [source,shell]
 ----
 podman compose -f docker-compose.yaml up -d
