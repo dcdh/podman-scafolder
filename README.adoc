@@ -80,7 +80,7 @@ sudo semanage fcontext -a -t container_file_t "/srv/registry(/.*)?"
 sudo restorecon -R -v /srv/registry
 ----
 
-Start registry from VM
+Start registry from VM: DEPRECATED see Quadlet paragraph
 [source,shell]
 ----
 sudo podman run -d --name registry -p 5000:5000 -v /srv/registry/data:/var/lib/registry docker.io/library/registry:2
@@ -160,3 +160,43 @@ Call hello2
 ----
 curl http://hello2.local-lab.com:8080
 ----
+
+=== Quadlet
+
+Troubleshoot
+
+[source,shell]
+----
+sudo /usr/libexec/podman/quadlet -dryrun
+----
+
+[source,shell]
+----
+/usr/libexec/podman/quadlet -user -dryrun
+----
+
+==== Registry
+
+[source,shell]
+----
+sudo tee /etc/containers/systemd/registry.container >/dev/null <<'EOF'
+[Unit]
+Description=Local Podman Registry
+
+[Container]
+Image=docker.io/library/registry:2
+ContainerName=registry
+
+# Ports
+PublishPort=5000:5000
+
+# Volume
+Volume=/srv/registry/data:/var/lib/registry:Z
+
+[Install]
+WantedBy=multi-user.target
+EOF
+sudo systemctl daemon-reload
+sudo systemctl start registry.service
+----
+
