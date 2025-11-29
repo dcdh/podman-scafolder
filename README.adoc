@@ -175,6 +175,11 @@ sudo /usr/libexec/podman/quadlet -dryrun
 /usr/libexec/podman/quadlet -user -dryrun
 ----
 
+[source,shell]
+----
+podman network ls
+----
+
 ==== Registry
 
 [source,shell]
@@ -200,3 +205,77 @@ sudo systemctl daemon-reload
 sudo systemctl start registry.service
 ----
 
+==== lab
+
+[source,shell]
+----
+sudo tee /etc/containers/systemd/hello1.container >/dev/null <<'EOF'
+[Unit]
+Description=hello1 container
+
+[Container]
+Image=localhost:5000/hashicorp/http-echo:0.2.3
+ContainerName=hello1
+Exec=-text="Hello from hello1"
+Network=systemd-labnet
+
+[Install]
+WantedBy=multi-user.target
+EOF
+sudo tee /etc/containers/systemd/hello2.container >/dev/null <<'EOF'
+[Unit]
+Description=hello2 container
+
+[Container]
+Image=localhost:5000/hashicorp/http-echo:0.2.3
+ContainerName=hello2
+Exec=-text="Hello from hello2"
+Network=systemd-labnet
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+sudo tee /etc/containers/systemd/nginx.container >/dev/null <<'EOF'
+[Unit]
+Description=nginx container
+
+[Container]
+Image=nginx:latest
+ContainerName=nginx
+PublishPort=8080:80
+Volume=/etc/containers/systemd/nginx.conf:/etc/nginx/conf.d/default.conf:Z
+Network=systemd-labnet
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+sudo tee /etc/containers/systemd/labnet.network >/dev/null <<'EOF'
+[Network]
+Driver=bridge
+EOF
+
+sudo tee /etc/containers/systemd/nginx.conf >/dev/null <<'EOF'
+server {
+    listen 80;
+    server_name hello.local-lab.com;
+    location / {
+        proxy_pass http://hello1:5678;
+    }
+}
+
+server {
+    listen 80;
+    server_name hello2.local-lab.com;
+    location / {
+        proxy_pass http://hello2:5678;
+    }
+}
+EOF
+sudo systemctl daemon-reload
+sudo systemctl start labnet-network
+sudo systemctl start hello1.service
+sudo systemctl start hello2.service
+sudo systemctl start nginx.service
+----
