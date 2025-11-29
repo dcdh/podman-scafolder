@@ -163,6 +163,8 @@ curl http://hello2.local-lab.com:8080
 
 === Quadlet
 
+https://www.redhat.com/en/blog/multi-container-application-podman-quadlet
+
 Troubleshoot
 
 [source,shell]
